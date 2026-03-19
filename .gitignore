@@ -1,0 +1,33 @@
+# Environment
+venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Data files — never push raw data to GitHub
+data/raw/
+data/external/
+*.csv
+*.xlsx
+*.xls
+
+# Outputs
+outputs/models/*.pkl
+outputs/models/*.joblib
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/settings.json
+.idea/
