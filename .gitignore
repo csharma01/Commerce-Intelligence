@@ -7,14 +7,16 @@ __pycache__/
 *.pyd
 .Python
 
-# Data files — never push raw data to GitHub
+# Large data files - never push these
 data/raw/
-data/external/
-*.csv
+data/processed/retail_clean.csv
 *.xlsx
 *.xls
 
-# Outputs
+# Processed data - too large for GitHub
+data/processed/retail_clean.csv
+
+# Model pickle files - too large
 outputs/models/*.pkl
 outputs/models/*.joblib
 
@@ -32,4 +34,5 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 
-GEMINI.MD
+# Gemini context file
+GEMINI.md
