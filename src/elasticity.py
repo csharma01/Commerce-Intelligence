@@ -133,7 +133,7 @@ def classify_elasticity(elasticity_df):
     opportunity = annual_revenue * (0.10 + 0.11 * elasticity_df['elasticity_coefficient'])
     elasticity_df['estimated_annual_opportunity'] = np.where(
         elasticity_df['commercial_priority'] == 'HIGH',
-        opportunity,
+        np.maximum(opportunity, 0.0),
         0.0
     )
     

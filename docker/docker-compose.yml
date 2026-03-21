@@ -8,7 +8,9 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ..:/app
+      - ../outputs:/app/outputs
+      - ../data/external:/app/data/external
+      - ../data/processed:/app/data/processed
     environment:
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
