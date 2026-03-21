@@ -75,7 +75,7 @@ if not hp_filtered.empty:
             'mean_price': '£{:.2f}',
             'estimated_annual_opportunity': '£{:.2f}'
         }),
-        width='stretch'
+        use_container_width=True
     )
     
     csv = hp_filtered.to_csv(index=False).encode('utf-8')
@@ -108,7 +108,7 @@ fig = px.scatter(
     title=f"Elasticity vs Revenue for {segment_filter}"
 )
 fig.update_layout(height=600)
-st.plotly_chart(fig, width='stretch')
+st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("""
 **Guide:**

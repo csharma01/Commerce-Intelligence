@@ -92,19 +92,19 @@ def main():
     with col1:
         st.subheader("Pricing Intelligence")
         st.write("Optimise margins by identifying inelastic products with high revenue potential.")
-        if st.button("Go to Pricing", width='stretch'):
+        if st.button("Go to Pricing", use_container_width=True):
             st.switch_page("pages/01_pricing_intelligence.py")
             
     with col2:
         st.subheader("Demand Forecasting")
         st.write("Prevent stock-outs with Tweedie LightGBM models designed for intermittent demand.")
-        if st.button("Go to Forecasting", width='stretch'):
+        if st.button("Go to Forecasting", use_container_width=True):
             st.switch_page("pages/02_demand_forecasting.py")
             
     with col3:
         st.subheader("Competitor Intelligence")
         st.write("Benchmark wholesale prices against Cox & Cox retail prices to find pricing headroom.")
-        if st.button("Go to Competitor Info", width='stretch'):
+        if st.button("Go to Competitor Info", use_container_width=True):
             st.switch_page("pages/03_competitor_intelligence.py")
 
     st.write("---")

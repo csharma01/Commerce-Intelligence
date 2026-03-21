@@ -59,7 +59,7 @@ st.dataframe(
         'Suggested_Reorder_Qty': '{:.0f}',
         'Days_Until_Stockout': '{:.1f}'
     }),
-    width='stretch'
+    use_container_width=True
 )
 
 st.write("---")
@@ -79,7 +79,7 @@ with col1:
             title="Distribution of Model Improvements (%)"
         )
         fig_perf.update_layout(bargap=0.1)
-        st.plotly_chart(fig_perf, width='stretch')
+        st.plotly_chart(fig_perf, use_container_width=True)
     else:
         st.info("Performance data unavailable.")
 
@@ -100,7 +100,7 @@ with col2:
         },
         title="Stock Risk Segments"
     )
-    st.plotly_chart(fig_pie, width='stretch')
+    st.plotly_chart(fig_pie, use_container_width=True)
 
 st.write("---")
 

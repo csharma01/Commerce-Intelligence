@@ -39,7 +39,7 @@ st.dataframe(
         'Gap %': '{:.1f}%',
         'Headroom vs Implied': '£{:.2f}'
     }),
-    width='stretch'
+    use_container_width=True
 )
 
 st.write("---")
@@ -59,7 +59,7 @@ fig_gap = px.bar(
 )
 fig_gap.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
 fig_gap.update_layout(yaxis={'categoryorder': 'total ascending'}, height=500)
-st.plotly_chart(fig_gap, width='stretch')
+st.plotly_chart(fig_gap, use_container_width=True)
 
 st.write("---")
 
@@ -73,7 +73,7 @@ if not df_prices.empty:
     if not cat_samples.empty:
         st.dataframe(
             cat_samples[['product_name', 'price_gbp', 'source', 'product_url']].style.format({'price_gbp': '£{:.2f}'}),
-            width='stretch'
+            use_container_width=True
         )
     else:
         st.info("No products found for this category.")
