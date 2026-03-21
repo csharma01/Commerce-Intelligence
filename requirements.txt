@@ -1,0 +1,15 @@
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+statsmodels
+scikit-learn
+lightgbm
+streamlit
+plotly
+requests
+beautifulsoup4
+lxml
+pytest
+python-dotenv
