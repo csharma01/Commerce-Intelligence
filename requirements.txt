@@ -13,5 +13,4 @@ beautifulsoup4
 lxml
 pytest
 python-dotenv
-streamlit==1.29.0
 altair==4.2.2
