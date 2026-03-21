@@ -40,11 +40,11 @@ def calculate_elasticity(df, min_observations=30):
     # Ensure Quantity and Price are positive for log transformation
     df_filtered = df_filtered[(df_filtered['Quantity'] > 0) & (df_filtered['Price'] > 0)]
     
-    weekly_df = df_filtered.groupby(['StockCode', 'Description', 'Category', 'Year', 'Week']).agg({
+    weekly_df = df_filtered.groupby(['StockCode', 'Description', 'Category', 'customer_type', 'Year', 'Week']).agg({
         'Quantity': 'sum',
-        'Price': 'mean',
         'Revenue': 'sum'
     }).reset_index()
+    weekly_df['Price'] = weekly_df['Revenue'] / weekly_df['Quantity']
     
     # ISSUE 1 - Price floor filter
     initial_count = len(weekly_df)
@@ -52,14 +52,17 @@ def calculate_elasticity(df, min_observations=30):
     removed_count = initial_count - len(weekly_df)
     logger.info(f"Price floor filter (< £0.50) removed {removed_count} weekly records.")
     
-    # Filter for SKUs with enough observations
-    sku_counts = weekly_df.groupby('StockCode').size()
-    skus_to_analyze = sku_counts[sku_counts >= min_observations].index
+    # Filter for SKUs/Segments with enough observations
+    segment_counts = weekly_df.groupby(['StockCode', 'customer_type']).size()
+    segments_to_analyze = segment_counts[segment_counts >= min_observations].index
     
     results = []
     
-    for sku in skus_to_analyze:
-        sku_data = weekly_df[weekly_df['StockCode'] == sku].copy()
+    for (sku, segment) in segments_to_analyze:
+        sku_data = weekly_df[
+            (weekly_df['StockCode'] == sku) & 
+            (weekly_df['customer_type'] == segment)
+        ].copy()
         
         # Log transformations
         sku_data['log_q'] = np.log(sku_data['Quantity'])
@@ -80,6 +83,7 @@ def calculate_elasticity(df, min_observations=30):
             
             results.append({
                 'StockCode': sku,
+                'customer_type': segment,
                 'Description': sku_data['Description'].iloc[0],
                 'Category': sku_data['Category'].iloc[0],
                 'elasticity_coefficient': elasticity,
@@ -92,7 +96,7 @@ def calculate_elasticity(df, min_observations=30):
                 'is_significant': p_value < 0.05
             })
         except Exception as e:
-            logger.warning(f"Failed to calculate elasticity for SKU {sku}: {e}")
+            logger.warning(f"Failed to calculate elasticity for SKU {sku} ({segment}): {e}")
             
     return pd.DataFrame(results)
 
@@ -108,38 +112,36 @@ def classify_elasticity(elasticity_df):
     """
     logger.info("Classifying elasticity types and priorities...")
     
-    def get_type(row):
-        coeff = row['elasticity_coefficient']
-        if -1.0 <= coeff <= 0:
-            return 'INELASTIC'
-        elif coeff < -1.0:
-            return 'ELASTIC'
-        else:
-            return 'UNUSUAL'
-            
-    def get_priority(row):
-        if row['elasticity_type'] == 'INELASTIC' and row['is_significant']:
-            return 'HIGH'
-        elif row['elasticity_type'] == 'ELASTIC' and row['is_significant']:
-            return 'MEDIUM'
-        else:
-            return 'LOW'
-            
-    def get_opportunity(row):
-        if row['commercial_priority'] == 'HIGH':
-            # Formula: mean_weekly_quantity * mean_price * 52 * 0.10 * (1 + elasticity_coefficient)
-            return row['mean_weekly_quantity'] * row['mean_price'] * 52 * 0.10 * (1 + row['elasticity_coefficient'])
-        return 0.0
+    # Elasticity Type
+    conditions_type = [
+        (elasticity_df['elasticity_coefficient'] >= -1.0) & (elasticity_df['elasticity_coefficient'] <= 0),
+        (elasticity_df['elasticity_coefficient'] < -1.0)
+    ]
+    choices_type = ['INELASTIC', 'ELASTIC']
+    elasticity_df['elasticity_type'] = np.select(conditions_type, choices_type, default='UNUSUAL')
 
-    elasticity_df['elasticity_type'] = elasticity_df.apply(get_type, axis=1)
-    elasticity_df['commercial_priority'] = elasticity_df.apply(get_priority, axis=1)
-    elasticity_df['estimated_annual_opportunity'] = elasticity_df.apply(get_opportunity, axis=1)
+    # Commercial Priority
+    conditions_priority = [
+        (elasticity_df['elasticity_type'] == 'INELASTIC') & elasticity_df['is_significant'],
+        (elasticity_df['elasticity_type'] == 'ELASTIC') & elasticity_df['is_significant']
+    ]
+    choices_priority = ['HIGH', 'MEDIUM']
+    elasticity_df['commercial_priority'] = np.select(conditions_priority, choices_priority, default='LOW')
+
+    # Opportunity calculation
+    annual_revenue = elasticity_df['mean_weekly_quantity'] * elasticity_df['mean_price'] * 52
+    opportunity = annual_revenue * (0.10 + 0.11 * elasticity_df['elasticity_coefficient'])
+    elasticity_df['estimated_annual_opportunity'] = np.where(
+        elasticity_df['commercial_priority'] == 'HIGH',
+        opportunity,
+        0.0
+    )
     
     return elasticity_df
 
 def save_results(elasticity_df, output_path='outputs/elasticity_results.csv'):
     """
-    Save full results and high priority SKUs to CSV.
+    Save full results and segment-specific results to CSV.
     
     Args:
         elasticity_df (pd.DataFrame): Classified elasticity results.
@@ -153,6 +155,13 @@ def save_results(elasticity_df, output_path='outputs/elasticity_results.csv'):
     # Save full results
     elasticity_df.to_csv(output_path, index=False)
     
+    # Save segment-specific results
+    wholesale = elasticity_df[elasticity_df['customer_type'] == 'WHOLESALE']
+    retail = elasticity_df[elasticity_df['customer_type'] == 'RETAIL']
+    
+    wholesale.to_csv('outputs/elasticity_wholesale.csv', index=False)
+    retail.to_csv('outputs/elasticity_retail.csv', index=False)
+    
     # Save high priority SKUs
     high_priority = elasticity_df[elasticity_df['commercial_priority'] == 'HIGH'].sort_values(
         'estimated_annual_opportunity', ascending=False
@@ -160,16 +169,14 @@ def save_results(elasticity_df, output_path='outputs/elasticity_results.csv'):
     high_priority_path = 'outputs/high_priority_skus.csv'
     high_priority.to_csv(high_priority_path, index=False)
     
-    # Log summary
-    total_skus = len(elasticity_df)
-    sig_count = elasticity_df['is_significant'].sum()
-    high_count = len(high_priority)
-    total_opp = high_priority['estimated_annual_opportunity'].sum()
-    
-    logger.info(f"Summary: Total SKUs analyzed: {total_skus}")
-    logger.info(f"Summary: Significant elasticities: {sig_count}")
-    logger.info(f"Summary: HIGH priority SKUs: {high_count}")
-    logger.info(f"Summary: Total Annual Opportunity: £{total_opp:,.2f}")
+    # Log summaries per segment
+    for segment in ['WHOLESALE', 'RETAIL']:
+        seg_df = elasticity_df[elasticity_df['customer_type'] == segment]
+        seg_high = seg_df[seg_df['commercial_priority'] == 'HIGH']
+        
+        logger.info(f"Summary ({segment}): Total SKUs analyzed: {len(seg_df)}")
+        logger.info(f"Summary ({segment}): HIGH priority SKUs: {len(seg_high)}")
+        logger.info(f"Summary ({segment}): Total Annual Opportunity: £{seg_high['estimated_annual_opportunity'].sum():,.2f}")
 
 def run_category_analysis(elasticity_df):
     """
@@ -192,15 +199,15 @@ def run_category_analysis(elasticity_df):
         'StockCode': 'sku_count'
     })
     
-    # Calculate percentage inelastic
-    def pct_inelastic(x):
-        return (x == 'INELASTIC').mean() * 100
-        
-    category_stats['pct_inelastic'] = elasticity_df.groupby('Category')['elasticity_type'].apply(pct_inelastic)
-    
-    # Calculate high priority count
-    category_stats['high_priority_count'] = elasticity_df[elasticity_df['commercial_priority'] == 'HIGH'].groupby('Category').size()
-    category_stats['high_priority_count'] = category_stats['high_priority_count'].fillna(0).astype(int)
+    # Vectorized percentage inelastic
+    inelastic_mask = elasticity_df['elasticity_type'] == 'INELASTIC'
+    category_stats['pct_inelastic'] = inelastic_mask.groupby(
+        elasticity_df['Category']).mean() * 100
+
+    # Vectorized high priority count
+    high_priority_mask = elasticity_df['commercial_priority'] == 'HIGH'
+    category_stats['high_priority_count'] = high_priority_mask.groupby(
+        elasticity_df['Category']).sum().astype(int)
     
     category_stats = category_stats.reset_index()
     
@@ -224,33 +231,47 @@ def main():
     save_results(elasticity_df)
     run_category_analysis(elasticity_df)
     
-    # Print top 10 revenue SKUs
-    top_revenue = elasticity_df.sort_values('total_revenue', ascending=False).head(10)
+    # Print tables
     
-    print("\n" + "="*80)
-    print(f"{'TOP 10 REVENUE SKUs WITH ELASTICITY':^80}")
-    print("="*80)
+    # 1. TOP 10 WHOLESALE SKUs by revenue
+    wholesale_top = elasticity_df[elasticity_df['customer_type'] == 'WHOLESALE'].sort_values(
+        'total_revenue', ascending=False).head(10)
+    
+    print("\n" + "="*95)
+    print(f"{'TOP 10 WHOLESALE SKUs BY REVENUE WITH ELASTICITY':^95}")
+    print("="*95)
     print(f"{'Description':<35} | {'Category':<15} | {'Elasticity':>10} | {'Revenue (£)':>12}")
-    print("-"*80)
-    
-    for _, row in top_revenue.iterrows():
+    print("-"*95)
+    for _, row in wholesale_top.iterrows():
         print(f"{row['Description'][:35]:<35} | {row['Category']:<15} | {row['elasticity_coefficient']:>10.2f} | {row['total_revenue']:>12,.2f}")
-    print("="*80 + "\n")
+    print("="*95 + "\n")
 
-    # Print top 15 HIGH priority SKUs
+    # 2. TOP 10 RETAIL SKUs by revenue
+    retail_top = elasticity_df[elasticity_df['customer_type'] == 'RETAIL'].sort_values(
+        'total_revenue', ascending=False).head(10)
+    
+    print("\n" + "="*95)
+    print(f"{'TOP 10 RETAIL SKUs BY REVENUE WITH ELASTICITY':^95}")
+    print("="*95)
+    print(f"{'Description':<35} | {'Category':<15} | {'Elasticity':>10} | {'Revenue (£)':>12}")
+    print("-"*95)
+    for _, row in retail_top.iterrows():
+        print(f"{row['Description'][:35]:<35} | {row['Category']:<15} | {row['elasticity_coefficient']:>10.2f} | {row['total_revenue']:>12,.2f}")
+    print("="*95 + "\n")
+
+    # 3. TOP 15 HIGH PRIORITY across both segments
     high_priority = elasticity_df[elasticity_df['commercial_priority'] == 'HIGH'].sort_values(
         'estimated_annual_opportunity', ascending=False
     ).head(15)
     
-    print("\n" + "="*80)
-    print(f"{'TOP 15 HIGH PRIORITY SKUs':^80}")
-    print("="*80)
-    print(f"{'Description':<35} | {'Category':<15} | {'Elasticity':>10} | {'Price':>8} | {'Opp (£)':>10}")
-    print("-"*80)
-    
+    print("\n" + "="*95)
+    print(f"{'TOP 15 HIGH PRIORITY SKUs (BOTH SEGMENTS)':^95}")
+    print("="*95)
+    print(f"{'Description':<35} | {'Segment':<10} | {'Elasticity':>10} | {'Price':>8} | {'Opp (£)':>10}")
+    print("-"*95)
     for _, row in high_priority.iterrows():
-        print(f"{row['Description'][:35]:<35} | {row['Category']:<15} | {row['elasticity_coefficient']:>10.2f} | {row['mean_price']:>8.2f} | {row['estimated_annual_opportunity']:>10.2f}")
-    print("="*80 + "\n")
+        print(f"{row['Description'][:35]:<35} | {row['customer_type']:<10} | {row['elasticity_coefficient']:>10.2f} | {row['mean_price']:>8.2f} | {row['estimated_annual_opportunity']:>10.2f}")
+    print("="*95 + "\n")
 
 if __name__ == "__main__":
     main()

@@ -26,7 +26,9 @@ def mock_df():
             'Year': date.year,
             'Month': date.month,
             'Week': date.isocalendar()[1],
-            'is_partial_month': False
+            'is_partial_month': False,
+            'Country': 'United Kingdom',
+            'customer_type': 'WHOLESALE'
         })
         
     # Admin SKU
@@ -42,7 +44,9 @@ def mock_df():
             'Year': date.year,
             'Month': date.month,
             'Week': date.isocalendar()[1],
-            'is_partial_month': False
+            'is_partial_month': False,
+            'Country': 'United Kingdom',
+            'customer_type': 'WHOLESALE'
         })
         
     return pd.DataFrame(data)
@@ -53,9 +57,9 @@ def test_elasticity_columns(mock_df):
     results = classify_elasticity(results)
     
     expected_cols = [
-        'StockCode', 'Description', 'Category', 'elasticity_coefficient',
-        'r_squared', 'p_value', 'observation_count', 'mean_price',
-        'mean_weekly_quantity', 'total_revenue', 'is_significant',
+        'StockCode', 'customer_type', 'Description', 'Category', 
+        'elasticity_coefficient', 'r_squared', 'p_value', 'observation_count', 
+        'mean_price', 'mean_weekly_quantity', 'total_revenue', 'is_significant',
         'elasticity_type', 'commercial_priority', 'estimated_annual_opportunity'
     ]
     
@@ -101,7 +105,9 @@ def test_elasticity_calculation_logic():
             'Revenue': quantities[i] * prices[i],
             'Year': 2010,
             'Week': (i % 52) + 1,
-            'is_partial_month': False
+            'is_partial_month': False,
+            'Country': 'United Kingdom',
+            'customer_type': 'WHOLESALE'
         })
     df = pd.DataFrame(data)
     
