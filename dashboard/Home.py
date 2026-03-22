@@ -89,49 +89,49 @@ def main():
     
     st.subheader("Module Navigation")
     st.markdown("""
-    <style>
-    .nav-button {
-        display: inline-block;
-        width: 100%;
-        padding: 14px 20px;
-        background-color: #1a1a2e;
-        color: white;
-        text-align: center;
-        text-decoration: none;
-        border: 1px solid #444;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    .nav-button:hover {
-        background-color: #16213e;
-        color: white;
-        text-decoration: none;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+<style>
+.st-nav-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #0e1117;
+    color: white !important;
+    text-align: center;
+    text-decoration: none !important;
+    border: 1px solid rgba(250,250,250,0.2);
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 8px;
+}
+.st-nav-btn:hover {
+    background-color: #1a1a2e;
+    border-color: rgba(250,250,250,0.4);
+    color: white !important;
+    text-decoration: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown(
-            '<a href="./pricing_intelligence" class="nav-button">Go to Pricing</a>',
+            '<a href="./Pricing_Intelligence" class="st-nav-btn">Go to Pricing</a>',
             unsafe_allow_html=True
         )
     with col2:
         st.markdown(
-            '<a href="./demand_forecasting" class="nav-button">Go to Forecasting</a>',
+            '<a href="./Demand_Forecasting" class="st-nav-btn">Go to Forecasting</a>',
             unsafe_allow_html=True
         )
     with col3:
         st.markdown(
-            '<a href="./competitor_intelligence" class="nav-button">Go to Competitor Info</a>',
+            '<a href="./Competitor_Intelligence" class="st-nav-btn">Go to Competitor Info</a>',
             unsafe_allow_html=True
         )
     with col4:
         st.markdown(
-            '<a href="./commercial_overview" class="nav-button">Go to Overview</a>',
+            '<a href="./Commercial_Overview" class="st-nav-btn">Go to Overview</a>',
             unsafe_allow_html=True
         )
 
