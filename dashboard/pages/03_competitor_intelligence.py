@@ -55,13 +55,13 @@ fig_gap = px.bar(
     x='Gap %',
     y='Category',
     orientation='h',
-    text='Gap %',
+    text=df_gap['Gap %'].round(1).astype(str) + '%',
     color='Gap %',
     color_continuous_scale='Greens',
     labels={'Gap %': 'Price Gap (%)'},
     title="Wholesale-to-Retail Price Gap by Category"
 )
-fig_gap.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+fig_gap.update_traces(textposition='outside')
 fig_gap.update_layout(yaxis={'categoryorder': 'total ascending'}, height=500)
 st.plotly_chart(fig_gap, use_container_width=True)
 

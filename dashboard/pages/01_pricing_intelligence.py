@@ -41,8 +41,12 @@ with col_f1:
     segments = df_results['customer_type'].unique()
     segment_filter = st.selectbox("Customer Segment", options=segments)
 with col_f2:
-    categories = sorted(df_results['Category'].unique())
-    category_filter = st.multiselect("Category Filter", options=categories, default=categories[:3])
+    all_categories = sorted(df_results['Category'].unique().tolist())
+    category_filter = st.multiselect(
+        'Category Filter',
+        options=all_categories,
+        default=all_categories
+    )
 with col_f3:
     significant_only = st.checkbox("Show statistically significant only", value=True)
 
@@ -97,22 +101,25 @@ st.write("---")
 
 # --- SCATTER PLOT ---
 st.subheader("Elasticity vs Revenue")
-fig = px.scatter(
-    filtered_df,
-    x='elasticity_coefficient',
-    y='total_revenue',
-    color='commercial_priority',
-    hover_name='Description',
-    labels={
-        'elasticity_coefficient': 'Elasticity Coefficient',
-        'total_revenue': 'Total Revenue (GBP)',
-        'commercial_priority': 'Priority Level'
-    },
-    color_discrete_map={'HIGH': 'red', 'MEDIUM': 'orange', 'LOW': 'blue'},
-    title=f"Elasticity vs Revenue for {segment_filter}"
-)
-fig.update_layout(height=600)
-st.plotly_chart(fig, use_container_width=True)
+if len(filtered_df) == 0:
+    st.info("No data matches the current filters.")
+else:
+    fig = px.scatter(
+        filtered_df,
+        x='elasticity_coefficient',
+        y='total_revenue',
+        color='commercial_priority',
+        hover_name='Description',
+        labels={
+            'elasticity_coefficient': 'Elasticity Coefficient',
+            'total_revenue': 'Total Revenue (GBP)',
+            'commercial_priority': 'Priority Level'
+        },
+        color_discrete_map={'HIGH': 'red', 'MEDIUM': 'orange', 'LOW': 'blue'},
+        title=f"Elasticity vs Revenue for {segment_filter}"
+    )
+    fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("""
 **Guide:**

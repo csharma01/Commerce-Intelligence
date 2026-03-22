@@ -91,20 +91,19 @@ with col2:
     st.subheader("Risk Level Distribution")
     risk_counts = df_risk['Risk_Level'].value_counts().reset_index()
     risk_counts.columns = ['Risk_Level', 'Count']
-    fig_pie = px.pie(
-        risk_counts, 
-        values='Count', 
+    fig = px.pie(
+        risk_counts,
+        values='Count',
         names='Risk_Level',
         color='Risk_Level',
         color_discrete_map={
-            'CRITICAL': '#ff4b4b',
-            'HIGH': '#ffa500',
-            'MEDIUM': '#f9d71c',
-            'LOW': '#00cc96'
-        },
-        title="Stock Risk Segments"
+            'CRITICAL': '#ff4444',
+            'HIGH': '#ff8800',
+            'MEDIUM': '#ffcc00',
+            'LOW': '#44bb44'
+        }
     )
-    st.plotly_chart(fig_pie, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 st.write("---")
 
