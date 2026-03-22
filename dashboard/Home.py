@@ -87,25 +87,14 @@ def main():
     
     st.write("---")
     
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.subheader("Pricing Intelligence")
-        st.write("Optimise margins by identifying inelastic products with high revenue potential.")
-        if st.button("Go to Pricing", use_container_width=True):
-            st.switch_page("pages/01_pricing_intelligence.py")
-            
-    with col2:
-        st.subheader("Demand Forecasting")
-        st.write("Prevent stock-outs with Tweedie LightGBM models designed for intermittent demand.")
-        if st.button("Go to Forecasting", use_container_width=True):
-            st.switch_page("pages/02_demand_forecasting.py")
-            
-    with col3:
-        st.subheader("Competitor Intelligence")
-        st.write("Benchmark wholesale prices against Cox & Cox retail prices to find pricing headroom.")
-        if st.button("Go to Competitor Info", use_container_width=True):
-            st.switch_page("pages/03_competitor_intelligence.py")
+    st.subheader("Module Navigation")
+    st.markdown("""
+    Select a module to begin your analysis:
+    - [Pricing Intelligence](./pricing_intelligence)
+    - [Demand Forecasting](./demand_forecasting)  
+    - [Competitor Intelligence](./competitor_intelligence)
+    - [Commercial Overview](./commercial_overview)
+    """)
 
     st.write("---")
     st.info("Select a module from the sidebar or above to begin your analysis.")

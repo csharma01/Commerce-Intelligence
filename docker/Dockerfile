@@ -21,7 +21,7 @@ COPY . .
 EXPOSE 8501
 
 # Run the dashboard
-CMD ["streamlit", "run", "dashboard/app.py", \
+CMD ["streamlit", "run", "dashboard/Home.py", \
      "--server.port=8501", \
      "--server.address=0.0.0.0", \
      "--server.headless=true"]
