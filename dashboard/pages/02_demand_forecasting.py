@@ -52,8 +52,12 @@ def color_risk(val):
     elif val == 'LOW': color = '#00cc96'
     return f'background-color: {color}; color: black; font-weight: bold'
 
+df_display_risk = df_risk.copy()
+for col in df_display_risk.select_dtypes(include='object').columns:
+    df_display_risk[col] = df_display_risk[col].astype(str)
+
 st.dataframe(
-    df_risk.style.map(color_risk, subset=['Risk_Level']).format({
+    df_display_risk.style.map(color_risk, subset=['Risk_Level']).format({
         'Weekly_Forecast': '{:.0f}',
         'Current_Inventory': '{:.0f}',
         'Suggested_Reorder_Qty': '{:.0f}',
@@ -114,8 +118,11 @@ if not urgent_df.empty:
         'Weekly_Forecast': 'Weekly Forecast',
         'Suggested_Reorder_Qty': 'Reorder Qty'
     })
-    st.table(
-        reorder_display.sort_values(by='Weekly Forecast', ascending=False)
-    )
+    
+    df_display_reorder = reorder_display.sort_values(by='Weekly Forecast', ascending=False).copy()
+    for col in df_display_reorder.select_dtypes(include='object').columns:
+        df_display_reorder[col] = df_display_reorder[col].astype(str)
+        
+    st.table(df_display_reorder)
 else:
     st.success("✅ No urgent reorders needed based on current forecasts.")

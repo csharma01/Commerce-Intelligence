@@ -147,7 +147,10 @@ if not df_elasticity.empty:
             cat_risks = df_risk[df_risk['StockCode'].isin(cat_skus)]
             if not cat_risks.empty:
                 st.write("Top Risks in Category:")
-                st.table(cat_risks[['StockCode', 'Risk_Level', 'Days_Until_Stockout']])
+                df_display_risks = cat_risks[['StockCode', 'Risk_Level', 'Days_Until_Stockout']].copy()
+                for col in df_display_risks.select_dtypes(include='object').columns:
+                    df_display_risks[col] = df_display_risks[col].astype(str)
+                st.table(df_display_risks)
             else:
                 st.success("✅ No stock risks for this category.")
         else:

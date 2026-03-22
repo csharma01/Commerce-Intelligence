@@ -31,8 +31,12 @@ st.write("---")
 st.subheader("Price Gap Analysis")
 st.write("Benchmark wholesale prices against premium retailer Cox & Cox.")
 
+df_display_gap = df_gap.copy()
+for col in df_display_gap.select_dtypes(include='object').columns:
+    df_display_gap[col] = df_display_gap[col].astype(str)
+
 st.dataframe(
-    df_gap.style.background_gradient(subset=['Gap %'], cmap='Greens').format({
+    df_display_gap.style.background_gradient(subset=['Gap %'], cmap='Greens').format({
         'Our Wholesale £': '£{:.2f}',
         'Implied Retail £': '£{:.2f}',
         'Cox&Cox £': '£{:.2f}',
@@ -71,8 +75,12 @@ if not df_prices.empty:
     
     cat_samples = df_prices[df_prices['our_category'] == selected_category].head(5)
     if not cat_samples.empty:
+        df_display_samples = cat_samples[['product_name', 'price_gbp', 'source', 'product_url']].copy()
+        for col in df_display_samples.select_dtypes(include='object').columns:
+            df_display_samples[col] = df_display_samples[col].astype(str)
+            
         st.dataframe(
-            cat_samples[['product_name', 'price_gbp', 'source', 'product_url']].style.format({'price_gbp': '£{:.2f}'}),
+            df_display_samples.style.format({'price_gbp': '£{:.2f}'}),
             use_container_width=True
         )
     else:

@@ -67,8 +67,12 @@ if not hp_filtered.empty:
         'Description', 'Category', 'customer_type', 
         'elasticity_coefficient', 'mean_price', 'estimated_annual_opportunity'
     ]
+    df_display = hp_filtered[display_cols].copy()
+    for col in df_display.select_dtypes(include='object').columns:
+        df_display[col] = df_display[col].astype(str)
+        
     st.dataframe(
-        hp_filtered[display_cols].style.background_gradient(
+        df_display.style.background_gradient(
             subset=['estimated_annual_opportunity'], cmap='YlOrRd'
         ).format({
             'elasticity_coefficient': '{:.2f}',
