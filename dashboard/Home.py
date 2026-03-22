@@ -89,12 +89,51 @@ def main():
     
     st.subheader("Module Navigation")
     st.markdown("""
-    Select a module to begin your analysis:
-    - [Pricing Intelligence](./pricing_intelligence)
-    - [Demand Forecasting](./demand_forecasting)  
-    - [Competitor Intelligence](./competitor_intelligence)
-    - [Commercial Overview](./commercial_overview)
-    """)
+    <style>
+    .nav-button {
+        display: inline-block;
+        width: 100%;
+        padding: 14px 20px;
+        background-color: #1a1a2e;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border: 1px solid #444;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .nav-button:hover {
+        background-color: #16213e;
+        color: white;
+        text-decoration: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(
+            '<a href="./pricing_intelligence" class="nav-button">Go to Pricing</a>',
+            unsafe_allow_html=True
+        )
+    with col2:
+        st.markdown(
+            '<a href="./demand_forecasting" class="nav-button">Go to Forecasting</a>',
+            unsafe_allow_html=True
+        )
+    with col3:
+        st.markdown(
+            '<a href="./competitor_intelligence" class="nav-button">Go to Competitor Info</a>',
+            unsafe_allow_html=True
+        )
+    with col4:
+        st.markdown(
+            '<a href="./commercial_overview" class="nav-button">Go to Overview</a>',
+            unsafe_allow_html=True
+        )
 
     st.write("---")
     st.info("Select a module from the sidebar or above to begin your analysis.")
