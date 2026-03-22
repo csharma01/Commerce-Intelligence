@@ -116,22 +116,22 @@ def main():
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown(
-            '<a href="./Pricing_Intelligence" class="st-nav-btn">Go to Pricing</a>',
+            '<a href="./pricing_intelligence" class="st-nav-btn">Go to Pricing</a>',
             unsafe_allow_html=True
         )
     with col2:
         st.markdown(
-            '<a href="./Demand_Forecasting" class="st-nav-btn">Go to Forecasting</a>',
+            '<a href="./demand_forecasting" class="st-nav-btn">Go to Forecasting</a>',
             unsafe_allow_html=True
         )
     with col3:
         st.markdown(
-            '<a href="./Competitor_Intelligence" class="st-nav-btn">Go to Competitor Info</a>',
+            '<a href="./competitor_intelligence" class="st-nav-btn">Go to Competitor Info</a>',
             unsafe_allow_html=True
         )
     with col4:
         st.markdown(
-            '<a href="./Commercial_Overview" class="st-nav-btn">Go to Overview</a>',
+            '<a href="./commercial_overview" class="st-nav-btn">Go to Overview</a>',
             unsafe_allow_html=True
         )
 
